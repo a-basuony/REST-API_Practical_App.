@@ -1,4 +1,5 @@
 const { validationResult } = require("express-validator");
+const Post = require("../models/post.model");
 
 // ✅ GET all posts
 exports.getPosts = (req, res, next) => {
@@ -26,26 +27,41 @@ exports.getPosts = (req, res, next) => {
 };
 
 // ✅ CREATE a post
-exports.createPost = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({
-      message: "Validation failed",
-      errors: errors.array(),
-    });
-  }
+//@desc create a post
+//@route  POST /feed/post
+exports.createPost = async (req, res, next) => {
+  try {
+    const { title, imagePath, content } = req.body;
 
-  const { title, content } = req.body;
+    if (!title || !content) {
+      return res
+        .status(400)
+        .json({ message: "Title and content are required" });
+    }
 
-  res.status(201).json({
-    message: "Post created successfully",
-    post: {
-      _id: new Date().toISOString(),
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed : creating post");
+      error.statusCode = 422;
+      error.data = errors.array();
+      throw error;
+    }
+
+    const newPost = await Post.create({
       title: title,
+      imagePath: "images/mylogo.jpg",
       content: content,
-      imageUrl: "images/mylogo.jpg",
       creator: { name: "Ahmed" },
-      createdAt: new Date(),
-    },
-  });
+    });
+
+    res.status(201).json({
+      message: "Post created successfully",
+      post: newPost,
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
 };

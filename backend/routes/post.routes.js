@@ -5,8 +5,10 @@ const { body } = require("express-validator");
 const router = express.Router();
 
 router.get("/posts", getPosts);
+
+// POST /feed/post
 router.post(
-  "/posts",
+  "/post",
   [
     body("title")
       .trim()
