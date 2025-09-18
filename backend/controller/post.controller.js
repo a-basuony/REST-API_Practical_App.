@@ -32,12 +32,19 @@ exports.getPosts = (req, res, next) => {
 //@route  POST /feed/post
 exports.createPost = async (req, res, next) => {
   try {
-    const { title, imageUrl, content } = req.body;
+    const { title, content } = req.body;
+    const image = req.file;
 
     if (!title || !content) {
       return res
         .status(400)
         .json({ message: "Title and content are required" });
+    }
+
+    if (!image) {
+      const error = new Error("No image found");
+      error.statusCode = 404;
+      throw error;
     }
 
     const errors = validationResult(req);
@@ -50,7 +57,7 @@ exports.createPost = async (req, res, next) => {
 
     const newPost = await Post.create({
       title: title,
-      imageUrl: "/images/mylogo.jpg",
+      imageUrl: image.path,
       content: content,
       creator: { name: "Ahmed" },
     });
