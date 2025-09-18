@@ -1,29 +1,30 @@
 const { validationResult } = require("express-validator");
 const Post = require("../models/post.model");
 
-// ✅ GET all posts
+// ✅ get all posts
+//@desc Get all posts from the database
+//@route  GET /feed/posts
 exports.getPosts = (req, res, next) => {
-  // res.status(200).json({
-  //   posts: [
-  //     {
-  //       _id: "1",
-  //       title: "First Post",
-  //       content: "This is the first dummy post content",
-  //       imageUrl: "images/mylogo.jpg", // هيترندر من /images
-  //       creator: { name: "Ahmed" },
-  //       createdAt: new Date(),
-  //     },
-  //     {
-  //       _id: "2",
-  //       title: "Second Post",
-  //       content: "Another dummy content here",
-  //       imageUrl: "images/duck.jpg",
-  //       creator: { name: "Max" },
-  //       createdAt: new Date(),
-  //     },
-  //   ],
-  //   totalItems: 2,
-  // });
+  Post.find()
+    // .populate("creator", "name") // Only populate the 'name' field from the 'creator' field. This replaces that ID with the actual User object (containing name).
+    .then((posts) => {
+      if (!posts) {
+        const error = new Error("No posts found");
+        error.status = 404;
+        throw error;
+      }
+      res.status(200).json({
+        message: "Posts fetched successfully",
+        posts: posts,
+      });
+    })
+    .catch((error) => {
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
+      console.log(error);
+      next(error);
+    });
 };
 
 // ✅ CREATE a post
@@ -31,7 +32,7 @@ exports.getPosts = (req, res, next) => {
 //@route  POST /feed/post
 exports.createPost = async (req, res, next) => {
   try {
-    const { title, imagePath, content } = req.body;
+    const { title, imageUrl, content } = req.body;
 
     if (!title || !content) {
       return res
@@ -49,7 +50,7 @@ exports.createPost = async (req, res, next) => {
 
     const newPost = await Post.create({
       title: title,
-      imagePath: "images/mylogo.jpg",
+      imageUrl: "/images/mylogo.jpg",
       content: content,
       creator: { name: "Ahmed" },
     });
@@ -66,16 +67,19 @@ exports.createPost = async (req, res, next) => {
   }
 };
 
+// ✅ GET a single post
+//@desc Get a single post from the database
+//@route  GET /feed/post/:postId
 exports.getPost = async (req, res, next) => {
   try {
-    const prodId = req.params.prodId;
-    if (!prodId) {
+    const postId = req.params.postId;
+    if (!postId) {
       const error = new Error("No postId found");
       error.statusCode = 404;
       throw error;
     }
 
-    Post.findById(prodId).then((post) => {
+    Post.findById(postId).then((post) => {
       if (!post) {
         const error = new Error("No post found");
         error.statusCode = 404;

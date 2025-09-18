@@ -6,7 +6,7 @@ const postSchema = mongoose.Schema(
       type: String,
       required: [true, "Title is required"],
     },
-    imagePath: {
+    imageUrl: {
       type: String,
       required: [true, "Image is required"],
     },
@@ -15,7 +15,7 @@ const postSchema = mongoose.Schema(
       required: [true, "Content is required"],
     },
     creator: {
-      // type: mongoose.Schema.Types.ObjectId,
+      // type: ,
       // ref: "User",
       type: Object,
       required: true,

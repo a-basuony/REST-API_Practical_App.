@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 
 const feedRoutes = require("./routes/post.routes");
 const connectDB = require("./config/db");
@@ -14,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(morgan("dev"));
-app.use("/images", express.static("images"));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Routes
 app.use("/feed", feedRoutes);
