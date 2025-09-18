@@ -3,27 +3,27 @@ const Post = require("../models/post.model");
 
 // ✅ GET all posts
 exports.getPosts = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: "1",
-        title: "First Post",
-        content: "This is the first dummy post content",
-        imageUrl: "images/mylogo.jpg", // هيترندر من /images
-        creator: { name: "Ahmed" },
-        createdAt: new Date(),
-      },
-      {
-        _id: "2",
-        title: "Second Post",
-        content: "Another dummy content here",
-        imageUrl: "images/duck.jpg",
-        creator: { name: "Max" },
-        createdAt: new Date(),
-      },
-    ],
-    totalItems: 2,
-  });
+  // res.status(200).json({
+  //   posts: [
+  //     {
+  //       _id: "1",
+  //       title: "First Post",
+  //       content: "This is the first dummy post content",
+  //       imageUrl: "images/mylogo.jpg", // هيترندر من /images
+  //       creator: { name: "Ahmed" },
+  //       createdAt: new Date(),
+  //     },
+  //     {
+  //       _id: "2",
+  //       title: "Second Post",
+  //       content: "Another dummy content here",
+  //       imageUrl: "images/duck.jpg",
+  //       creator: { name: "Max" },
+  //       createdAt: new Date(),
+  //     },
+  //   ],
+  //   totalItems: 2,
+  // });
 };
 
 // ✅ CREATE a post
@@ -57,6 +57,33 @@ exports.createPost = async (req, res, next) => {
     res.status(201).json({
       message: "Post created successfully",
       post: newPost,
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+exports.getPost = async (req, res, next) => {
+  try {
+    const prodId = req.params.prodId;
+    if (!prodId) {
+      const error = new Error("No postId found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    Post.findById(prodId).then((post) => {
+      if (!post) {
+        const error = new Error("No post found");
+        error.statusCode = 404;
+        throw error;
+      }
+      res
+        .status(200)
+        .json({ message: "Post fetched successfully", post: post });
     });
   } catch (error) {
     if (!error.statusCode) {
