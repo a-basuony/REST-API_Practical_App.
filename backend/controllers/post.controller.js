@@ -1,7 +1,8 @@
+const path = require("path");
+const fs = require("fs");
+
 const { validationResult } = require("express-validator");
 const Post = require("../models/post.model");
-const fs = require("fs");
-const path = require("path");
 
 const deleteFile = (filePath) => {
   const fullPath = path.join(__dirname, "..", filePath);
@@ -87,13 +88,14 @@ exports.updatePost = async (req, res, next) => {
       throw error;
     }
 
-    post.title = title;
-    post.content = content;
-
-    if (image) {
+    if (image !== post.imageUrl) {
+      // delete old image
       deleteFile(post.imageUrl);
       post.imageUrl = image.path.replace("\\", "/");
     }
+
+    post.title = title;
+    post.content = content;
 
     const updatedPost = await post.save();
 
