@@ -1,6 +1,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const { signup } = require("../controllers/auth.controller");
+const User = require("../models/user.model");
 
 const router = express.Router();
 
@@ -9,7 +10,18 @@ router.post(
   [
     // validate user
     body("name").trim().isLength({ min: 3 }),
-    body("email").trim().isEmail(),
+    body("email")
+      .trim()
+      .isEmail()
+      .normalizeEmail()
+      .custom(async (value, { req }) => {
+        const user = await User.findOne({ email: value });
+        if (user) {
+          const error = new Error("Email already exists");
+          error.statusCode = 422;
+          throw error;
+        }
+      }),
     body("password")
       .trim()
       .isLength({ min: 4 })
