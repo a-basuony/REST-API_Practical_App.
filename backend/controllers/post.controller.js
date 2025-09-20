@@ -19,6 +19,13 @@ exports.getPosts = async (req, res, next) => {
     const page = +req.query.page || 1;
     const limit = +req.query.limit || 5;
 
+    const totalPosts = await Post.find().countDocuments();
+    if (page > totalPosts && page > 1) {
+      const error = new Error("Page not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
     const posts = await Post.find()
       .skip((page - 1) * limit)
       .limit(limit)
@@ -26,6 +33,7 @@ exports.getPosts = async (req, res, next) => {
     res.status(200).json({
       message: "Posts fetched successfully",
       posts,
+      totalPosts,
     });
   } catch (error) {
     if (!error.statusCode) error.statusCode = 500;

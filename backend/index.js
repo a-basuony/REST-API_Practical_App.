@@ -8,6 +8,7 @@ const path = require("path");
 const multer = require("multer");
 
 const feedRoutes = require("./routes/post.routes");
+const authRoutes = require("./routes/auth.routes");
 const connectDB = require("./config/db");
 
 const app = express();
@@ -49,6 +50,7 @@ app.use(
 
 // Routes
 app.use("/feed", feedRoutes);
+app.use("/auth", authRoutes);
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
