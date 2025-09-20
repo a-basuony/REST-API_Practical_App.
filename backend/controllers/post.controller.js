@@ -16,7 +16,13 @@ const deleteFile = (filePath) => {
 // GET /feed/posts
 exports.getPosts = async (req, res, next) => {
   try {
-    const posts = await Post.find().populate("creator", "name");
+    const page = +req.query.page || 1;
+    const limit = +req.query.limit || 5;
+
+    const posts = await Post.find()
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("creator", "name");
     res.status(200).json({
       message: "Posts fetched successfully",
       posts,
@@ -125,6 +131,32 @@ exports.getPost = async (req, res, next) => {
     res.status(200).json({
       message: "Post fetched successfully",
       post,
+    });
+  } catch (error) {
+    if (!error.statusCode) error.statusCode = 500;
+    next(error);
+  }
+};
+
+// ✅ Delete a post
+// DELETE /feed/post/:postId
+exports.deletePost = async (req, res, next) => {
+  try {
+    const postId = req.params.postId;
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new Error("No post found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    deleteFile(post.imageUrl);
+    // await Post.findByIdAndRemove(postId);
+    await Post.deleteOne({ _id: postId });
+
+    res.status(200).json({
+      message: "Post deleted successfully",
     });
   } catch (error) {
     if (!error.statusCode) error.statusCode = 500;
