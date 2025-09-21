@@ -141,7 +141,7 @@ class Feed extends Component {
     fetch(url, {
       method: method,
       headers: {
-        "Content-Type": "application/json",
+        Authorization: "Bearer " + this.props.token,
       },
       body: JSON.stringify({
         title: postData.title,
@@ -207,6 +207,9 @@ class Feed extends Component {
     this.setState({ postsLoading: true });
     fetch("http://localhost:5000/feed/post/" + postId, {
       method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + this.props.token,
+      },
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {

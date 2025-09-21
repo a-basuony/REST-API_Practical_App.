@@ -21,6 +21,7 @@ router.get("/posts", isAuth, getPosts);
 // POST /feed/post
 router.post(
   "/post",
+  isAuth,
   [
     body("title")
       .trim()
@@ -38,6 +39,7 @@ router.post(
 // PUT /feed/post/:postId
 router.put(
   "/post/:postId",
+  isAuth,
   [
     body("title")
       .trim()
@@ -53,10 +55,10 @@ router.put(
 
 // Get a single post
 // GET /feed/post/:postId
-router.get("/post/:postId", getPost);
+router.get("/post/:postId", isAuth, getPost);
 
 // Delete a post
 // DELETE /feed/post/:postId
-router.delete("/post/:postId", deletePost);
+router.delete("/post/:postId", isAuth, deletePost);
 
 module.exports = router;

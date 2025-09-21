@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const { validationResult } = require("express-validator");
 const Post = require("../models/post.model");
+const User = require("../models/user.model");
 
 const deleteFile = (filePath) => {
   const fullPath = path.join(__dirname, "..", filePath);
@@ -46,8 +47,9 @@ exports.getPosts = async (req, res, next) => {
 exports.createPost = async (req, res, next) => {
   try {
     const { title, content } = req.body;
-    const image = req.file;
+    const image = req.file; // multer
 
+    // validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       const error = new Error("Validation failed: creating post");
@@ -62,16 +64,31 @@ exports.createPost = async (req, res, next) => {
       throw error;
     }
 
-    const newPost = await Post.create({
+    // create new post linked to user
+    const newPost = new Post({
       title,
       content,
-      imageUrl: image.path.replace("\\", "/"), // fix Windows path
-      creator: { name: "Ahmed" },
+      imageUrl: image.path.replace("\\", "/"),
+      creator: req.userId, // جاي من isAuth middleware
     });
+
+    await newPost.save();
+
+    // find user and link post
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    user.posts.push(newPost);
+    await user.save();
 
     res.status(201).json({
       message: "Post created successfully",
       post: newPost,
+      creator: { _id: user._id, name: user.name },
     });
   } catch (error) {
     if (!error.statusCode) error.statusCode = 500;
@@ -96,9 +113,16 @@ exports.updatePost = async (req, res, next) => {
     }
 
     const post = await Post.findById(postId);
+
     if (!post) {
       const error = new Error("No post found");
       error.statusCode = 404;
+      throw error;
+    }
+
+    if (post.creator.toString() !== req.userId) {
+      const error = new Error("Not authorized");
+      error.statusCode = 403;
       throw error;
     }
 
@@ -156,6 +180,11 @@ exports.deletePost = async (req, res, next) => {
     if (!post) {
       const error = new Error("No post found");
       error.statusCode = 404;
+      throw error;
+    }
+    if (post.creator.toString() !== req.userId) {
+      const error = new Error("Not authorized");
+      error.statusCode = 403;
       throw error;
     }
 

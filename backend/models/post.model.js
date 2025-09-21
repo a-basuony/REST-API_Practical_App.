@@ -15,9 +15,8 @@ const postSchema = mongoose.Schema(
       required: [true, "Content is required"],
     },
     creator: {
-      // type: ,
-      // ref: "User",
-      type: Object,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
   },
