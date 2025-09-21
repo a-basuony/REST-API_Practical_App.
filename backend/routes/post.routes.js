@@ -9,11 +9,13 @@ const {
   deletePost,
 } = require("../controllers/post.controller");
 
+const isAuth = require("../middleware/is-auth");
+
 const router = express.Router();
 
 // Get all posts
 // GET /feed/posts
-router.get("/posts", getPosts);
+router.get("/posts", isAuth, getPosts);
 
 // Create a post
 // POST /feed/post
