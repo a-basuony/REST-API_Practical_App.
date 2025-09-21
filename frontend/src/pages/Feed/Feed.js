@@ -61,7 +61,11 @@ class Feed extends Component {
     }
 
     // Fetch posts from backend for the current page
-    fetch("http://localhost:5000/feed/posts?page=" + page)
+    fetch("http://localhost:5000/feed/posts?page=" + page, {
+      headers: {
+        Authorization: "Bearer " + this.props.token,
+      },
+    })
       .then((res) => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch posts.");
