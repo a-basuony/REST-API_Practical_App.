@@ -10,6 +10,7 @@ const multer = require("multer");
 const feedRoutes = require("./routes/post.routes");
 const authRoutes = require("./routes/auth.routes");
 const connectDB = require("./config/db");
+const { init } = require("./socket");
 
 const app = express();
 dotenv.config();
@@ -73,8 +74,18 @@ app.use((error, req, res, next) => {
 connectDB()
   .then(() => {
     // Start server
-    app.listen(PORT, () => {
+
+    // 🔥 Init socket.io separately
+    const server = http.createServer(app);
+    init(server);
+
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT} and Database connected`);
+    });
+
+    const io = require("socket.io")(server);
+    io.on("connection", (socket) => {
+      console.log("Client connected");
     });
   })
   .catch((error) => {

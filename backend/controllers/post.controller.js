@@ -4,6 +4,7 @@ const fs = require("fs");
 const { validationResult } = require("express-validator");
 const Post = require("../models/post.model");
 const User = require("../models/user.model");
+const { getIO } = require("../socket");
 
 const deleteFile = (filePath) => {
   const fullPath = path.join(__dirname, "..", filePath);
@@ -84,6 +85,8 @@ exports.createPost = async (req, res, next) => {
 
     user.posts.push(newPost);
     await user.save();
+
+    getIO().emit("posts", { action: "createPost", post: newPost });
 
     res.status(201).json({
       message: "Post created successfully",
