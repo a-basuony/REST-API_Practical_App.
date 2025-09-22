@@ -9,6 +9,9 @@ import Paginator from "../../components/Paginator/Paginator";
 import Loader from "../../components/Loader/Loader";
 import ErrorHandler from "../../components/ErrorHandler/ErrorHandler";
 import "./Feed.css";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 class Feed extends Component {
   // Local component state (data stored inside this component)
@@ -40,7 +43,18 @@ class Feed extends Component {
 
     // Fetch posts for the first page
     this.loadPosts();
+
+    socket.on("connect", () => console.log("socket connected", socket.id));
+   // Listen for new posts
+  socket.on("newPost", (post) => {
+    console.log("📢 New post received:", post);
+    this.addPost(post.post);
+    this.setState((prevState) => ({
+      posts: [post, ...prevState.posts], // add to top of feed
+      totalPosts: prevState.totalPosts + 1,
+    }));
   }
+);
 
   // Function to load posts, optionally with "next" or "previous" page
   loadPosts = (direction) => {
