@@ -31,7 +31,8 @@ exports.getPosts = async (req, res, next) => {
     const posts = await Post.find()
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate("creator", "name");
+      .populate("creator");
+    getIO().emit("posts", posts);
     res.status(200).json({
       message: "Posts fetched successfully",
       posts,
@@ -139,6 +140,7 @@ exports.updatePost = async (req, res, next) => {
     post.content = content;
 
     const updatedPost = await post.save();
+    getIO().emit("post:update", post);
 
     res.status(200).json({
       message: "Post updated successfully",
@@ -194,6 +196,8 @@ exports.deletePost = async (req, res, next) => {
     deleteFile(post.imageUrl);
     // await Post.findByIdAndRemove(postId);
     await Post.deleteOne({ _id: postId });
+
+    getIO().emit("post:delete", postId);
 
     res.status(200).json({
       message: "Post deleted successfully",
